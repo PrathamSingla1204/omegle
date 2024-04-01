@@ -1,8 +1,15 @@
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom"
+
 export const Room = ()=>
 {
-    return(
-        <>
-        Room page
-        </>
-    )
+   const [searchParams,setSeacrchParams] = useSearchParams();
+   const name = searchParams.get('name');
+
+   useEffect(() =>{
+
+   },[name])
+   return <div>
+    Hi {name}
+   </div>
 }
