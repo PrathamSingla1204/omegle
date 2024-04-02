@@ -2,17 +2,29 @@ import { Socket } from "socket.io";
 import http from "http";
 
 const express = require('express');
-const {Server} = require("socket.io");
+import { Server } from 'socket.io';
+import { UserManager } from "./managers/UserManager";
 
 const app = express();
 const server = http.createServer(http);
 
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "*"
+  }
+});
 
-io.on('connection',(socket:Socket)=>{
-    console.log("User connected");
-})
+const userManager = new UserManager();
 
-server.listen(3000,()=>{
- console.log("running on 3000");
-})
+io.on('connection', (socket: Socket) => {
+  console.log('a user connected');
+  userManager.addUser("randomName", socket);
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+    userManager.removeUser(socket.id);
+  })
+});
+
+server.listen(3000, () => {
+    console.log('listening on *:3000');
+});
