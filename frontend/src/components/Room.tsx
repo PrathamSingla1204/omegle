@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Socket, io } from "socket.io-client";
+
+import toast, {Toaster} from 'react-hot-toast';
+
+import Navbar from './Room/Navbar';
+import Main from './Room/Main';
 
 const URL = "http://localhost:3000";
 
@@ -12,7 +18,7 @@ export const Room = ({
     localAudioTrack: MediaStreamTrack | null,
     localVideoTrack: MediaStreamTrack | null,
 }) => {
-   //  const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [lobby, setLobby] = useState(true);
     const [socket, setSocket] = useState<null | Socket>(null);
     const [sendingPc, setSendingPc] = useState<null | RTCPeerConnection>(null);
@@ -81,9 +87,22 @@ export const Room = ({
             setRemoteMediaStream(stream);
             // trickle ice 
             setReceivingPc(pc);
-            window.pc = pc;
+            window.pcr = pc;
             pc.ontrack = (e) => {
-                alert("ontrack"+e);
+                alert("ontrack");
+                // console.error("inside ontrack");
+                // const {track, type} = e;
+                // if (type == 'audio') {
+                //     // setRemoteAudioTrack(track);
+                //     // @ts-ignore
+                //     remoteVideoRef.current.srcObject.addTrack(track)
+                // } else {
+                //     // setRemoteVideoTrack(track);
+                //     // @ts-ignore
+                //     remoteVideoRef.current.srcObject.addTrack(track)
+                // }
+                // //@ts-ignore
+                // remoteVideoRef.current.play();
             }
 
             pc.onicecandidate = async (e) => {
@@ -121,7 +140,16 @@ export const Room = ({
                 remoteVideoRef.current.srcObject.addTrack(track2)
                 //@ts-ignore
                 remoteVideoRef.current.play();
-               
+                // if (type == 'audio') {
+                //     // setRemoteAudioTrack(track);
+                //     // @ts-ignore
+                //     remoteVideoRef.current.srcObject.addTrack(track)
+                // } else {
+                //     // setRemoteVideoTrack(track);
+                //     // @ts-ignore
+                //     remoteVideoRef.current.srcObject.addTrack(track)
+                // }
+                // //@ts-ignore
             }, 5000)
         });
 
@@ -176,10 +204,19 @@ export const Room = ({
         }
     }, [localVideoRef])
 
-    return <div>
-        Hi {name}
-        <video autoPlay width={400} height={400} ref={localVideoRef} />
-        {lobby ? "Waiting to connect you to someone" : null}
-        <video autoPlay width={400} height={400} ref={remoteVideoRef} />
-    </div>
+    useEffect(() => {
+        if(lobby){
+            toast.loading("Waiting to connect you to someone")
+        }else{
+            toast.dismiss();
+        }
+    }, [lobby])
+
+    return (
+      <div className='flex flex-col gap-12'>
+        <Navbar />
+        <Main remoteVideoRef={remoteVideoRef} localVideoRef={localVideoRef} />
+        <Toaster />
+      </div>
+    );
 }
